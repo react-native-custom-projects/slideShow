@@ -59,7 +59,7 @@ const Carousel = ({ images }) => {
   const [selectedIndex, setSelectedIndex] = useState(0),
     [intervalId, setIntervalId] = useState(null),
     scrollRef = useRef(),
-    slideTimeOut = 3000;
+    slideTimeOut = 4000;
 
   useEffect(() => {
     startAutoSliding();
@@ -70,9 +70,7 @@ const Carousel = ({ images }) => {
   }, []);
 
   const stopAutoSliding = () => {
-    if (intervalId) {
-      clearInterval(intervalId);
-    }
+    clearInterval(intervalId);
   };
 
   const startAutoSliding = () => {
@@ -93,7 +91,7 @@ const Carousel = ({ images }) => {
     const layoutWidth = event.nativeEvent.layoutMeasurement.width,
       offsetX = event.nativeEvent.contentOffset.x;
     setSelectedIndex(Math.floor(offsetX / layoutWidth));
-    stopAutoSliding();
+    startAutoSliding();
   };
 
   return (
@@ -101,6 +99,7 @@ const Carousel = ({ images }) => {
       <ScrollView
         horizontal
         pagingEnabled
+        onMomentumScrollBegin={stopAutoSliding}
         onMomentumScrollEnd={setActiveSlide}
         ref={scrollRef}
       >

@@ -7,17 +7,17 @@ export default function App() {
     {
       url: 'https://picsum.photos/id/1/960/700',
       title: 'First Title',
-      subtitle: 'First subtitle',
+      subtitle: 'Subtitle of the first slide',
     },
     {
       url: 'https://picsum.photos/id/234/960/700',
       title: 'Second Title',
-      subtitle: 'Second subtitle',
+      subtitle: 'Subtitle of the second slide',
     },
     {
       url: 'https://picsum.photos/id/790/960/700',
       title: 'Third Title',
-      subtitle: 'Third subtitle',
+      subtitle: 'Subtitle of the third slide',
     },
   ];
 
