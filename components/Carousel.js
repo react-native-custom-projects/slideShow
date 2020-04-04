@@ -57,20 +57,26 @@ const styles = StyleSheet.create({
 
 const Carousel = ({ images }) => {
   const [selectedIndex, setSelectedIndex] = useState(0),
+    [intervalId, setIntervalId] = useState(null),
     scrollRef = useRef(),
     slideTimeOut = 3000;
-  let timer;
 
   useEffect(() => {
     startAutoSliding();
 
     return () => {
-      clearInterval(timer);
+      stopAutoSliding();
     };
   }, []);
 
+  const stopAutoSliding = () => {
+    if (intervalId) {
+      clearInterval(intervalId);
+    }
+  };
+
   const startAutoSliding = () => {
-    timer = setInterval(() => {
+    const id = setInterval(() => {
       setSelectedIndex((prevState) => {
         const newIndex = prevState === images.length - 1 ? 0 : prevState + 1;
         scrollRef.current.scrollTo({
@@ -80,12 +86,14 @@ const Carousel = ({ images }) => {
         return newIndex;
       });
     }, slideTimeOut);
+    setIntervalId(id);
   };
 
   const setActiveSlide = (event) => {
     const layoutWidth = event.nativeEvent.layoutMeasurement.width,
       offsetX = event.nativeEvent.contentOffset.x;
     setSelectedIndex(Math.floor(offsetX / layoutWidth));
+    stopAutoSliding();
   };
 
   return (
