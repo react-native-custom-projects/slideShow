@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { Component, createRef } from 'react';
 import {
   ScrollView,
   Text,
@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
   },
   indicatorsWrapper: {
     position: 'absolute',
-    bottom: 20,
+    bottom: 25,
     width: '100%',
     height: 6,
     flexDirection: 'row',
@@ -46,89 +46,102 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   indicator: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: 'white',
     margin: 5,
     display: 'flex',
   },
 });
 
-const Carousel = ({ images }) => {
-  const [selectedIndex, setSelectedIndex] = useState(0),
-    [intervalId, setIntervalId] = useState(null),
-    scrollRef = useRef(),
-    slideTimeOut = 4000;
+class Carousel extends Component {
+  state = {
+    selectedIndex: 0,
+    intervalId: 0,
+  };
+  scrollRef = createRef();
+  slideTimeOut = 4000;
 
-  useEffect(() => {
-    startAutoSliding();
+  componentDidMount() {
+    this.startAutoSliding();
+  }
 
-    return () => {
-      stopAutoSliding();
-    };
-  }, []);
+  componentWillUnmount() {
+    this.stopAutoSliding();
+  }
 
-  const stopAutoSliding = () => {
+  stopAutoSliding = () => {
+    const { intervalId } = this.state;
     clearInterval(intervalId);
   };
 
-  const startAutoSliding = () => {
+  startAutoSliding = () => {
+    const { images } = this.props;
     const id = setInterval(() => {
-      setSelectedIndex((prevState) => {
-        const newIndex = prevState === images.length - 1 ? 0 : prevState + 1;
-        scrollRef.current.scrollTo({
+      this.setState((prevState) => {
+        const newIndex =
+          prevState.selectedIndex === images.length - 1
+            ? 0
+            : prevState.selectedIndex + 1;
+        this.scrollRef.current.scrollTo({
           animated: true,
           x: newIndex * deviceWidth,
         });
-        return newIndex;
+        return { selectedIndex: newIndex };
       });
-    }, slideTimeOut);
-    setIntervalId(id);
+    }, this.slideTimeOut);
+    this.setState({ intervalId: id });
   };
 
-  const setActiveSlide = (event) => {
+  setActiveSlide = (event) => {
     const layoutWidth = event.nativeEvent.layoutMeasurement.width,
       offsetX = event.nativeEvent.contentOffset.x;
-    setSelectedIndex(Math.floor(offsetX / layoutWidth));
-    startAutoSliding();
+    this.setState({ selectedIndex: Math.floor(offsetX / layoutWidth) });
+
+    this.startAutoSliding();
   };
 
-  return (
-    <View style={styles.screen}>
-      <ScrollView
-        horizontal
-        pagingEnabled
-        onMomentumScrollBegin={stopAutoSliding}
-        onMomentumScrollEnd={setActiveSlide}
-        ref={scrollRef}
-      >
-        {images.map((el, i) => (
-          <ImageBackground
-            style={styles.slide}
-            key={i}
-            source={{ uri: el.url }}
-          >
-            <View style={styles.textWrapper}>
-              <Text style={styles.title}>{el.title}</Text>
-              <Text style={styles.subtitle}>{el.subtitle}</Text>
-            </View>
-          </ImageBackground>
-        ))}
-      </ScrollView>
-      <View style={styles.indicatorsWrapper}>
-        {images.map((el, i) => (
-          <View
-            style={{
-              ...styles.indicator,
-              opacity: selectedIndex === i ? 0.5 : 1,
-            }}
-            key={i}
-          />
-        ))}
+  render() {
+    const { images } = this.props,
+      { selectedIndex } = this.state;
+
+    return (
+      <View style={styles.screen}>
+        <ScrollView
+          horizontal
+          pagingEnabled
+          onMomentumScrollBegin={this.stopAutoSliding}
+          onMomentumScrollEnd={this.setActiveSlide}
+          ref={this.scrollRef}
+        >
+          {images.map((el, i) => (
+            <ImageBackground
+              style={styles.slide}
+              key={i}
+              source={{ uri: el.url }}
+            >
+              <View style={styles.textWrapper}>
+                <Text style={styles.title}>{el.title}</Text>
+                <Text style={styles.subtitle}>{el.subtitle}</Text>
+              </View>
+            </ImageBackground>
+          ))}
+        </ScrollView>
+        <View style={styles.indicatorsWrapper}>
+          {images.map((el, i) => (
+            <View
+              style={{
+                ...styles.indicator,
+                opacity: selectedIndex === i ? 0.5 : 1,
+              }}
+              key={i}
+            />
+          ))}
+        </View>
       </View>
-    </View>
-  );
-};
+    );
+  }
+}
 
 export default Carousel;
